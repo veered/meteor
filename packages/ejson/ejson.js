@@ -167,36 +167,36 @@ const builtinConverters = [
       return Base64.decode(obj.$binary);
     },
   },
-  { // Escaping one level
-    matchJSONValue(obj) {
-      return hasOwn(obj, '$escape') && Object.keys(obj).length === 1;
-    },
-    matchObject(obj) {
-      let match = false;
-      if (obj) {
-        const keyCount = Object.keys(obj).length;
-        if (keyCount === 1 || keyCount === 2) {
-          match =
-            builtinConverters.some(converter => converter.matchJSONValue(obj));
-        }
-      }
-      return match;
-    },
-    toJSONValue(obj) {
-      const newObj = {};
-      Object.keys(obj).forEach(key => {
-        newObj[key] = EJSON.toJSONValue(obj[key]);
-      });
-      return {$escape: newObj};
-    },
-    fromJSONValue(obj) {
-      const newObj = {};
-      Object.keys(obj.$escape).forEach(key => {
-        newObj[key] = EJSON.fromJSONValue(obj.$escape[key]);
-      });
-      return newObj;
-    },
-  },
+  // { // Escaping one level
+  //   matchJSONValue(obj) {
+  //     return hasOwn(obj, '$escape') && Object.keys(obj).length === 1;
+  //   },
+  //   matchObject(obj) {
+  //     let match = false;
+  //     if (obj) {
+  //       const keyCount = Object.keys(obj).length;
+  //       if (keyCount === 1 || keyCount === 2) {
+  //         match =
+  //           builtinConverters.some(converter => converter.matchJSONValue(obj));
+  //       }
+  //     }
+  //     return match;
+  //   },
+  //   toJSONValue(obj) {
+  //     const newObj = {};
+  //     Object.keys(obj).forEach(key => {
+  //       newObj[key] = EJSON.toJSONValue(obj[key]);
+  //     });
+  //     return {$escape: newObj};
+  //   },
+  //   fromJSONValue(obj) {
+  //     const newObj = {};
+  //     Object.keys(obj.$escape).forEach(key => {
+  //       newObj[key] = EJSON.fromJSONValue(obj.$escape[key]);
+  //     });
+  //     return newObj;
+  //   },
+  // },
   { // Custom
     matchJSONValue(obj) {
       return hasOwn(obj, '$type')
@@ -261,6 +261,7 @@ const adjustTypesToJSONValue = obj => {
   }
 
   // Iterate over array or object structure.
+  let original = obj;
   Object.keys(obj).forEach(key => {
     const value = obj[key];
     if (typeof value !== 'object' && value !== undefined &&
@@ -270,6 +271,9 @@ const adjustTypesToJSONValue = obj => {
 
     const changed = toJSONValueHelper(value);
     if (changed) {
+      if (obj === original) {
+        obj = Object.assign({}, obj);
+      }
       obj[key] = changed;
       return; // on to the next key
     }
@@ -591,11 +595,12 @@ EJSON.clone = v => {
 
   // handle other objects
   ret = {};
-  Object.keys(v).forEach((key) => {
+  for (var key in v) {
     ret[key] = EJSON.clone(v[key]);
-  });
+  };
   return ret;
 };
+
 
 /**
  * @summary Allocate a new buffer of binary data that EJSON can serialize.

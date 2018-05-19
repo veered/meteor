@@ -159,7 +159,8 @@ _.extend(ObserveMultiplexer.prototype, {
       // state from their arguments (assuming that their supplied callbacks
       // don't) and skip this clone. Currently 'changed' hangs on to state
       // though.
-      self._cache.applyChange[callbackName].apply(null, EJSON.clone(args));
+      // The CachingChangeObserver does it's own clones
+      self._cache.applyChange[callbackName].apply(null, args);
 
       // If we haven't finished the initial adds, then we should only be getting
       // adds.
@@ -199,7 +200,7 @@ _.extend(ObserveMultiplexer.prototype, {
     self._cache.docs.forEach(function (doc, id) {
       if (!_.has(self._handles, handle._id))
         throw Error("handle got removed before sending initial adds!");
-      var fields = EJSON.clone(doc);
+      var fields = _.clone(doc);
       delete fields._id;
       if (self._ordered)
         add(id, fields, null); // we're going in order, so add at end

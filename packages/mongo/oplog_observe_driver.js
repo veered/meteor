@@ -198,8 +198,8 @@ _.extend(OplogObserveDriver.prototype, {
     Meteor._noYieldsAllowed(function () {
       var fields = _.clone(doc);
       delete fields._id;
-      self._published.set(id, self._sharedProjectionFn(doc));
-      self._multiplexer.added(id, self._projectionFn(fields));
+      self._published.set(id, self._sharedProjectionFn(doc, true));
+      self._multiplexer.added(id, self._projectionFn(fields, true));
 
       // After adding this document, the published set might be overflowed
       // (exceeding capacity specified by limit). If so, push the maximum
@@ -280,9 +280,9 @@ _.extend(OplogObserveDriver.prototype, {
   _changePublished: function (id, oldDoc, newDoc) {
     var self = this;
     Meteor._noYieldsAllowed(function () {
-      self._published.set(id, self._sharedProjectionFn(newDoc));
-      var projectedNew = self._projectionFn(newDoc);
-      var projectedOld = self._projectionFn(oldDoc);
+      self._published.set(id, self._sharedProjectionFn(newDoc, true));
+      var projectedNew = self._projectionFn(newDoc, true);
+      var projectedOld = self._projectionFn(oldDoc, true);
       var changed = DiffSequence.makeChangedFields(
         projectedNew, projectedOld);
       if (!_.isEmpty(changed))
@@ -292,7 +292,7 @@ _.extend(OplogObserveDriver.prototype, {
   _addBuffered: function (id, doc) {
     var self = this;
     Meteor._noYieldsAllowed(function () {
-      self._unpublishedBuffer.set(id, self._sharedProjectionFn(doc));
+      self._unpublishedBuffer.set(id, self._sharedProjectionFn(doc, true));
 
       // If something is overflowing the buffer, we just remove it from cache
       if (self._unpublishedBuffer.size() > self._limit) {
@@ -636,7 +636,7 @@ _.extend(OplogObserveDriver.prototype, {
             }
             return;
           }
-          self._handleDoc(id, self._sharedProjectionFn(newDoc));
+          self._handleDoc(id, self._sharedProjectionFn(newDoc, true));
         } else if (!canDirectlyModifyDoc ||
                    self._matcher.canBecomeTrueByModifier(op.o) ||
                    (self._sorter && self._sorter.affectedByModifier(op.o))) {

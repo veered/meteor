@@ -108,15 +108,30 @@ var replaceTypes = function (document, atomTransformer) {
     return replacedTopLevelAtom;
 
   var ret = document;
-  _.each(document, function (val, key) {
+
+  for (let key in document) {
+    let val = document[key];
     var valReplaced = replaceTypes(val, atomTransformer);
     if (val !== valReplaced) {
       // Lazy clone. Shallow copy.
-      if (ret === document)
+      if (ret === document) {
         ret = _.clone(document);
+      }
       ret[key] = valReplaced;
     }
-  });
+  };
+
+  // _.each(document, function (val, key) {
+  //   var valReplaced = replaceTypes(val, atomTransformer);
+  //   if (val !== valReplaced) {
+  //     // Lazy clone. Shallow copy.
+  //     if (ret === document)
+  //       ret = _.clone(document);
+  //     ret[key] = valReplaced;
+  //   }
+  // });
+
+
   return ret;
 };
 

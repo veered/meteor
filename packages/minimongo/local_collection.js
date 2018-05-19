@@ -869,13 +869,13 @@ LocalCollection._compileProjection = fields => {
   const details = projectionDetails(fields);
 
   // returns transformed doc according to ruleTree
-  const transform = (doc, ruleTree) => {
+  const transform = (doc, ruleTree, shallow) => {
     // Special case for "sets"
     if (Array.isArray(doc)) {
       return doc.map(subdoc => transform(subdoc, ruleTree));
     }
 
-    const result = details.including ? {} : EJSON.clone(doc);
+    const result = details.including ? {} : (shallow ? Object.assign({}, doc) : EJSON.clone(doc));
 
     Object.keys(ruleTree).forEach(key => {
       if (!hasOwn.call(doc, key)) {
@@ -887,11 +887,11 @@ LocalCollection._compileProjection = fields => {
       if (rule === Object(rule)) {
         // For sub-objects/subsets we branch
         if (doc[key] === Object(doc[key])) {
-          result[key] = transform(doc[key], rule);
+          result[key] = transform(doc[key], rule, shallow);
         }
       } else if (details.including) {
         // Otherwise we don't even touch this subfield
-        result[key] = EJSON.clone(doc[key]);
+        result[key] = shallow ? doc[key] : EJSON.clone(doc[key]);
       } else {
         delete result[key];
       }
@@ -900,8 +900,8 @@ LocalCollection._compileProjection = fields => {
     return result;
   };
 
-  return doc => {
-    const result = transform(doc, details.tree);
+  return (doc, shallow) => {
+    const result = transform(doc, details.tree, shallow);
 
     if (_idProjection && hasOwn.call(doc, '_id')) {
       result._id = doc._id;

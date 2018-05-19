@@ -73,7 +73,7 @@ _.extend(SessionDocumentView.prototype, {
       return;
 
     // Don't share state with the data passed in by the user.
-    value = EJSON.clone(value);
+    // value = EJSON.clone(value);
 
     if (!_.has(self.dataByKey, key)) {
       self.dataByKey[key] = [{subscriptionHandle: subscriptionHandle,

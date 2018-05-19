@@ -77,7 +77,7 @@ DDPCommon.parseDDP = function (stringMessage) {
 };
 
 DDPCommon.stringifyDDP = function (msg) {
-  const copy = EJSON.clone(msg);
+  const copy = Object.assign({}, msg);
 
   // swizzle 'changed' messages from 'fields undefined' rep to 'fields
   // and cleared' rep
@@ -89,6 +89,9 @@ DDPCommon.stringifyDDP = function (msg) {
 
       if (typeof value === "undefined") {
         cleared.push(key);
+        if (copy.fields === msg.fields) {
+          copy.fields = Object.assign({}, copy.fields);
+        }
         delete copy.fields[key];
       }
     });
